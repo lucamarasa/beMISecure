@@ -1,22 +1,15 @@
 class ApplicationController < ActionController::Base
   protect_from_forgery with: :exception
   
-  after_filter :store_action
-
-  def store_action
-    return unless request.get? 
-    if (request.path != "/users/sign_in" &&
-        request.path != "/users/sign_up" &&
-        request.path != "/users/password/new" &&
-        request.path != "/users/password/edit" &&
-        request.path != "/users/confirmation" &&
-        request.path != "/users/sign_out" &&
-        !request.xhr?) # don't store ajax calls
-      store_location_for(:user, request.fullpath)
-    end
-  end
   
-  def after_sign_out_path_for(resource_or_scope)
-      chains_path
-  end
+    before_filter :configure_permitted_parameters, if: :devise_controller?
+
+    protected
+
+        def configure_permitted_parameters
+            devise_parameter_sanitizer.permit(:sign_up) { |u| u.permit(:name, :surname, :birthdate, :phonenumber, :email, :password) }
+            devise_parameter_sanitizer.permit(:account_update) { |u| u.permit(:name, :surname, :birthdate, :phonenumber, :email, :password, :current_password) }
+        end
+  
+  
 end
